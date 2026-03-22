@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Lista del Super</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#0f1117;--surf:#1a1d27;--surf2:#22263a;--brd:#2e3347;--acc:#6ee7b7;--acc2:#34d399;--accd:rgba(110,231,183,0.13);--accd2:rgba(110,231,183,0.06);--t:#f0f4f8;--t2:#8b95b0;--t3:#5a6380;--danger:#f87171;--dangd:rgba(248,113,113,0.12);--warn:#fbbf24;--r:14px;--rs:9px}
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--t);min-height:100vh;max-width:480px;margin:0 auto;padding-bottom:80px}
+
+    /* SETUP */
+    #setupScreen{display:none;padding:32px 20px}
+    .setup-card{background:var(--surf);border-radius:var(--r);border:1px solid var(--brd);padding:28px 24px}
+    .setup-card h2{font-family:'Syne',sans-serif;font-size:22px;color:var(--acc);margin-bottom:8px}
+    .setup-card p{color:var(--t2);font-size:14px;line-height:1.6;margin-bottom:20px}
+    .setup-card label{font-size:12px;color:var(--t2);font-weight:800;letter-spacing:.5px;text-transform:uppercase}
+    .setup-input{width:100%;margin-top:6px;margin-bottom:16px;background:var(--surf2);border:1.5px solid var(--brd);color:var(--t);border-radius:var(--rs);padding:12px 14px;font-size:13px;font-family:'Nunito',sans-serif;outline:none;transition:border-color .2s}
+    .setup-input:focus{border-color:var(--acc)}
+    .btn-primary{width:100%;padding:14px;border:none;border-radius:var(--rs);background:var(--acc);color:#0f1117;font-family:'Nunito',sans-serif;font-size:16px;font-weight:800;cursor:pointer}
+    .btn-primary:active{transform:scale(.98)}
+
+    /* HEADER */
+    .app-header{background:var(--surf);border-bottom:1px solid var(--brd);padding:14px 18px 11px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+    .app-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--acc);letter-spacing:-.3px}
+    .app-title span{color:var(--t)}
+    .vbadge{font-size:9px;font-weight:700;background:var(--accd);color:var(--acc);border:1px solid rgba(110,231,183,.25);border-radius:20px;padding:2px 8px;font-family:monospace}
+
+    /* TABS */
+    .tabs{display:flex;background:var(--surf);border-bottom:1px solid var(--brd);position:sticky;top:49px;z-index:99}
+    .tab{flex:1;padding:10px 3px;text-align:center;font-size:10.5px;font-weight:700;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;transition:color .2s,border-color .2s;display:flex;align-items:center;justify-content:center;gap:3px}
+    .tab.active{color:var(--acc);border-bottom-color:var(--acc)}
+    .tbadge{background:var(--acc);color:#0f1117;border-radius:20px;padding:1px 5px;font-size:10px;font-weight:900;min-width:16px;text-align:center}
+    .view{display:none}.view.on{display:block}
+
+    /* SEARCH + TOOLBAR */
+    .swrap{padding:12px 14px 6px}
+    .sbox{display:flex;align-items:center;gap:8px;background:var(--surf);border:1.5px solid var(--brd);border-radius:var(--r);padding:10px 13px;transition:border-color .2s}
+    .sbox:focus-within{border-color:var(--acc)}
+    .sbox input{flex:1;background:transparent;border:none;outline:none;color:var(--t);font-family:'Nunito',sans-serif;font-size:14px}
+    .sbox input::placeholder{color:var(--t3)}
+    .toolbar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px 4px}
+    .tool-count{font-size:11px;color:var(--t3)}
+    .tool-add{display:flex;align-items:center;gap:5px;background:var(--accd);border:1px solid rgba(110,231,183,.2);border-radius:var(--rs);padding:7px 12px;cursor:pointer;color:var(--acc);font-weight:800;font-size:12px;transition:all .15s}
+    .tool-add:active{transform:scale(.97)}
+
+    /* CATEGORY SECTIONS */
+    .csec{margin-bottom:2px}
+    .chdr{padding:9px 14px 5px;display:flex;align-items:center;gap:7px;font-size:12px;font-weight:800;color:var(--t2);cursor:pointer;user-select:none}
+    .chdr .caro{margin-left:auto;color:var(--t3);font-size:11px;transition:transform .2s}
+    .chdr.coll .caro{transform:rotate(-90deg)}
+    .citems{padding:0 10px 3px}
+    .citems.hidden{display:none}
+    .divider{height:1px;background:var(--brd);margin:4px 0 6px;opacity:.4}
+
+    /* PRODUCT ITEMS */
+    .pitem{display:flex;align-items:center;gap:8px;background:var(--surf);border:1.5px solid var(--brd);border-radius:var(--rs);padding:10px 10px;margin-bottom:5px;transition:border-color .15s,background .15s}
+    .pitem.inlist{border-color:var(--acc2);background:var(--accd2)}
+    .pemo{font-size:19px;flex-shrink:0}
+    .pnfo{flex:1;min-width:0}
+    .pnm{font-size:13px;font-weight:700;color:var(--t);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .pacts{display:flex;align-items:center;gap:1px;flex-shrink:0}
+    .qbtn{width:30px;height:30px;border:none;border-radius:7px;background:var(--surf2);color:var(--t);font-size:17px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+    .qbtn:active{transform:scale(.88);background:var(--accd);color:var(--acc)}
+    .qdsp{width:30px;text-align:center;font-size:14px;font-weight:800;color:var(--acc);cursor:pointer;padding:3px 0}
+    .sbtn{width:28px;height:28px;border:none;background:transparent;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .addbtn-sm{background:var(--accd);border:none;border-radius:7px;color:var(--acc);font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;padding:6px 10px;cursor:pointer;white-space:nowrap}
+    .addm{display:flex;align-items:center;gap:8px;background:var(--surf2);border:1.5px dashed var(--brd);border-radius:var(--rs);padding:12px 14px;margin:6px 10px;cursor:pointer;color:var(--t2);font-weight:700;font-size:13px;transition:all .15s}
+    .addm:active{border-color:var(--acc);color:var(--acc)}
+
+    /* CATALOG ROWS */
+    .cat-item-row{display:flex;align-items:center;gap:8px;background:var(--surf);border:1.5px solid var(--brd);border-radius:var(--rs);padding:11px 10px;margin-bottom:5px}
+    .cat-item-row.isfav{border-left:3px solid var(--acc2)}
+    .editbtn{background:var(--surf2);border:none;border-radius:7px;color:var(--t2);font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;padding:6px 9px;cursor:pointer;flex-shrink:0}
+    .delbtn{background:var(--dangd);border:none;border-radius:7px;color:var(--danger);font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;padding:6px 9px;cursor:pointer;flex-shrink:0}
+
+    /* CATEGORY MANAGER */
+    .catman-row{display:flex;align-items:center;gap:10px;background:var(--surf);border:1.5px solid var(--brd);border-radius:var(--rs);padding:12px 12px;margin-bottom:6px}
+    .catman-emo{font-size:22px;flex-shrink:0;width:34px;text-align:center}
+    .catman-info{flex:1;min-width:0}
+    .catman-name{font-size:13px;font-weight:700;color:var(--t)}
+    .catman-count{font-size:11px;color:var(--t3);margin-top:2px}
+
+    /* SHOP */
+    .ssum{margin:10px 14px;background:var(--surf);border-radius:var(--r);border:1px solid var(--brd);padding:13px 16px;display:flex;align-items:center;justify-content:space-between}
+    .ssum-lbl{font-size:12px;color:var(--t2)}
+    .ssum-num{font-size:22px;font-weight:800;color:var(--acc);font-family:'Syne',sans-serif}
+    .pbwrap{margin:0 14px 10px;background:var(--surf2);border-radius:20px;height:5px;overflow:hidden}
+    .pbar{height:100%;background:linear-gradient(90deg,var(--acc2),var(--acc));border-radius:20px;transition:width .4s}
+    .sitem{display:flex;align-items:center;gap:11px;background:var(--surf);border:1.5px solid var(--brd);border-radius:var(--rs);padding:13px 12px;margin-bottom:5px;cursor:pointer;transition:all .2s}
+    .sitem.done{background:var(--accd2);border-color:rgba(110,231,183,.2);opacity:.55}
+    .sitem.done .sinm{text-decoration:line-through;color:var(--t3)}
+    .cchk{width:26px;height:26px;border-radius:50%;flex-shrink:0;border:2px solid var(--brd);display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .2s}
+    .sitem.done .cchk{background:var(--acc);border-color:var(--acc);color:#0f1117}
+    .sinf{flex:1}.sinm{font-size:14px;font-weight:700}.siqt{font-size:11px;color:var(--t2);margin-top:1px}
+    .scat-lbl{padding:9px 14px 3px;font-size:10px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;color:var(--t3)}
+    .btn-complete{margin:14px;width:calc(100% - 28px);padding:15px;border:none;border-radius:var(--r);background:linear-gradient(135deg,var(--acc2),var(--acc));color:#0f1117;font-family:'Nunito',sans-serif;font-size:15px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px}
+    .btn-complete:active{transform:scale(.98)}
+    .adone{text-align:center;padding:10px 14px;color:var(--acc);font-weight:800;font-size:14px}
+
+    /* MODALS */
+    .mback{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;align-items:flex-end;justify-content:center}
+    .mback.open{display:flex}
+    .modal{background:var(--surf);border-radius:var(--r) var(--r) 0 0;border:1px solid var(--brd);border-bottom:none;padding:22px 20px 32px;width:100%;max-width:480px;animation:slideUp .22s ease}
+    @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+    .mtitle{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;margin-bottom:4px}
+    .msub{font-size:12px;color:var(--t2);margin-bottom:14px}
+    .minput{width:100%;background:var(--surf2);border:1.5px solid var(--brd);color:var(--t);border-radius:var(--rs);padding:12px 13px;font-size:14px;font-family:'Nunito',sans-serif;outline:none;margin-bottom:9px;transition:border-color .2s}
+    .minput:focus{border-color:var(--acc)}
+    .mselect{width:100%;background:var(--surf2);border:1.5px solid var(--brd);color:var(--t);border-radius:var(--rs);padding:12px 13px;font-size:14px;font-family:'Nunito',sans-serif;outline:none;margin-bottom:9px}
+    .mselect option{background:var(--surf2)}
+    .mchk-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid var(--brd);margin-top:4px;cursor:pointer;user-select:none}
+    .mchk-box{width:22px;height:22px;border-radius:6px;border:2px solid var(--brd);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;transition:all .2s}
+    .mchk-box.on{background:var(--acc2);border-color:var(--acc2);color:#0f1117}
+    .mchk-lbl{font-size:13px;color:var(--t2);font-weight:700}
+    .qrow{display:flex;align-items:center;justify-content:center;margin:16px 0}
+    .qbig{width:48px;height:48px;border:none;border-radius:11px;background:var(--surf2);color:var(--t);font-size:24px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+    .qbig:active{background:var(--accd);color:var(--acc);transform:scale(.9)}
+    .qnum{width:80px;text-align:center;font-size:36px;font-weight:900;color:var(--acc);font-family:'Syne',sans-serif}
+    .mrow{display:flex;gap:8px}
+    .mbtnp{flex:1;padding:13px;border:none;border-radius:var(--rs);background:var(--acc);color:#0f1117;font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;cursor:pointer}
+    .mbtnc{flex:1;padding:13px;border:1.5px solid var(--brd);border-radius:var(--rs);background:transparent;color:var(--t2);font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;cursor:pointer}
+    .mbtnd{flex:1;padding:13px;border:none;border-radius:var(--rs);background:var(--danger);color:#fff;font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;cursor:pointer}
+    .emoji-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:5px;margin-bottom:10px}
+    .emoji-opt{font-size:20px;text-align:center;padding:6px 2px;cursor:pointer;border-radius:7px;border:1.5px solid transparent;transition:all .15s}
+    .emoji-opt.sel{border-color:var(--acc);background:var(--accd)}
+    .emoji-opt:active{transform:scale(.9)}
+    .warn-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25);border-radius:20px;padding:5px 11px;font-size:11px;color:var(--warn);font-weight:700;margin-bottom:12px}
+
+    /* LOADING + EMPTY */
+    .loading{display:flex;align-items:center;justify-content:center;padding:48px;flex-direction:column;gap:12px}
+    .spinner{width:32px;height:32px;border:3px solid var(--brd);border-top-color:var(--acc);border-radius:50%;animation:spin .8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loading-text{color:var(--t2);font-size:14px;font-weight:600}
+    .empty{text-align:center;padding:40px 20px}
+    .empty .ei{font-size:42px;margin-bottom:12px}
+    .empty p{color:var(--t2);font-size:14px;line-height:1.6}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--surf);border:1px solid var(--brd);border-radius:30px;padding:9px 18px;font-size:13px;font-weight:700;color:var(--t);opacity:0;transition:all .28s;z-index:300;white-space:nowrap;pointer-events:none;box-shadow:0 4px 20px rgba(0,0,0,.4)}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .toast.ok{border-color:var(--acc2);color:var(--acc)}
+    .toast.err{border-color:var(--danger);color:var(--danger)}
+
+    /* BOTTOM BAR */
+    .btmbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--surf);border-top:1px solid var(--brd);padding:10px 18px 18px;display:flex;align-items:center;justify-content:space-between;z-index:150}
+    .cfgbtn{background:transparent;border:none;color:var(--t3);font-size:12px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;display:flex;align-items:center;gap:4px}
+    .rfbtn{background:var(--accd);border:1px solid rgba(110,231,183,.25);color:var(--acc);border-radius:var(--rs);padding:8px 14px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:5px}
+    .rfbtn:active{transform:scale(.97)}
+  </style>
+</head>
+<body>
+
+<!-- SETUP -->
+<div id="setupScreen">
+  <div class="setup-card">
+    <h2>🛒 Lista del Super</h2>
+    <p>Para comenzar, pega el URL del Google Apps Script que conecta con tu Google Sheets.</p>
+    <label>URL del Script</label>
+    <input class="setup-input" id="urlInput" type="url" placeholder="https://script.google.com/macros/s/.../exec">
+    <button class="btn-primary" onclick="saveUrl()">Guardar y comenzar</button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="mainApp" style="display:none">
+  <div class="app-header">
+    <div class="app-title">🛒 <span>Lista Super</span></div>
+    <span class="vbadge">v1.0</span>
+  </div>
+  <div class="tabs">
+    <div class="tab active" id="t-agr" onclick="sw('agr')">➕ Agregar</div>
+    <div class="tab" id="t-mer" onclick="sw('mer')">🧺 Mercado <span class="tbadge" id="pcount" style="display:none">0</span></div>
+    <div class="tab" id="t-cat" onclick="sw('cat')">📋 Catálogo</div>
+    <div class="tab" id="t-mgr" onclick="sw('mgr')">🏷️ Categ.</div>
+  </div>
+
+  <!-- AGREGAR -->
+  <div class="view on" id="v-agr">
+    <div class="swrap">
+      <div class="sbox">
+        <span style="color:var(--t3);font-size:15px">🔍</span>
+        <input type="text" placeholder="Buscar producto..." id="srch" oninput="filtr()">
+      </div>
+    </div>
+    <div id="catcon"></div>
+    <div class="addm" onclick="openProdModal('agregar',null)">➕  Agregar producto manual</div>
+  </div>
+
+  <!-- MERCADO -->
+  <div class="view" id="v-mer"><div id="shopcon"></div></div>
+
+  <!-- CATÁLOGO -->
+  <div class="view" id="v-cat">
+    <div class="swrap">
+      <div class="sbox">
+        <span style="color:var(--t3);font-size:15px">🔍</span>
+        <input type="text" placeholder="Buscar en catálogo..." id="csrch" oninput="renderCatlog()">
+      </div>
+    </div>
+    <div class="toolbar">
+      <span class="tool-count" id="cat-count"></span>
+      <div class="tool-add" onclick="openProdModal('catalogo',null)">➕ Nuevo producto</div>
+    </div>
+    <div id="catlogcon"></div>
+  </div>
+
+  <!-- CATEGORÍAS -->
+  <div class="view" id="v-mgr">
+    <div class="swrap">
+      <div class="sbox">
+        <span style="color:var(--t3);font-size:15px">🔍</span>
+        <input type="text" placeholder="Buscar categoría..." id="mgsrch" oninput="renderMgr()">
+      </div>
+    </div>
+    <div class="toolbar">
+      <span class="tool-count" id="mgr-count"></span>
+      <div class="tool-add" onclick="openCatModal(null)">➕ Nueva categoría</div>
+    </div>
+    <div id="mgrcon"></div>
+  </div>
+</div>
+
+<!-- MODAL: producto -->
+<div class="mback" id="pmod">
+  <div class="modal">
+    <div class="mtitle" id="pmod-title">Nuevo producto</div>
+    <div class="msub" id="pmod-sub">Queda guardado en el catálogo</div>
+    <input class="minput" type="text" id="pmod-n" placeholder="Nombre del producto">
+    <div style="display:flex;gap:8px">
+      <input class="minput" type="text" id="pmod-e" placeholder="Emoji 📦" style="width:88px;flex-shrink:0">
+      <select class="mselect" id="pmod-c" style="flex:1;margin-bottom:9px"><option value="">-- Categoría --</option></select>
+    </div>
+    <div class="mchk-row" onclick="togglePFav()">
+      <div class="mchk-box" id="pmod-fav-box"></div>
+      <span class="mchk-lbl">Frecuente ⭐ — aparece primero</span>
+    </div>
+    <div class="mrow" style="margin-top:15px">
+      <button class="mbtnc" onclick="closem('pmod')">Cancelar</button>
+      <button class="mbtnp" id="pmod-confirm" onclick="confirmProd()">Agregar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: categoría -->
+<div class="mback" id="cmod">
+  <div class="modal">
+    <div class="mtitle" id="cmod-title">Nueva categoría</div>
+    <div class="msub" id="cmod-sub">Elige un emoji y ponle nombre</div>
+    <input class="minput" type="text" id="cmod-n" placeholder="Nombre de la categoría">
+    <div style="font-size:11px;color:var(--t3);font-weight:800;margin-bottom:7px;letter-spacing:.5px;text-transform:uppercase">Emoji</div>
+    <div class="emoji-grid" id="emoji-grid"></div>
+    <input class="minput" type="text" id="cmod-e" placeholder="O escribe tu propio emoji..." oninput="syncEmojiInput()">
+    <div id="cmod-warn" style="display:none"><div class="warn-pill">⚠️ Los productos se moverán a «Sin categoría»</div></div>
+    <div class="mrow" style="margin-top:8px">
+      <button class="mbtnc" onclick="closem('cmod')">Cancelar</button>
+      <button class="mbtnp" id="cmod-confirm" onclick="confirmCat()">Crear</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: cantidad -->
+<div class="mback" id="qmod">
+  <div class="modal">
+    <div class="mtitle" id="qmod-t">Cantidad</div>
+    <div class="msub">Ajusta con los botones</div>
+    <div class="qrow">
+      <button class="qbig" onclick="adjQ(-1)">−</button>
+      <div class="qnum" id="qmod-q">1</div>
+      <button class="qbig" onclick="adjQ(1)">+</button>
+    </div>
+    <div class="mrow">
+      <button class="mbtnc" onclick="closem('qmod')">Cancelar</button>
+      <button class="mbtnp" onclick="confirmQ()">Listo</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: eliminar producto -->
+<div class="mback" id="delmod">
+  <div class="modal">
+    <div class="mtitle">🗑️ Eliminar producto</div>
+    <div class="msub" id="delmod-s"></div>
+    <div class="mrow">
+      <button class="mbtnc" onclick="closem('delmod')">Cancelar</button>
+      <button class="mbtnd" onclick="confirmDel()">Sí, eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: eliminar categoría -->
+<div class="mback" id="delcmod">
+  <div class="modal">
+    <div class="mtitle">🗑️ Eliminar categoría</div>
+    <div class="msub" id="delcmod-s"></div>
+    <div class="mrow">
+      <button class="mbtnc" onclick="closem('delcmod')">Cancelar</button>
+      <button class="mbtnd" onclick="confirmDelCat()">Sí, eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: finalizar compra -->
+<div class="mback" id="rmod">
+  <div class="modal">
+    <div class="mtitle">🎉 ¿Compra completada?</div>
+    <div class="msub">La lista activa se limpia. El catálogo se mantiene.</div>
+    <div class="mrow">
+      <button class="mbtnc" onclick="closem('rmod')">Cancelar</button>
+      <button class="mbtnd" onclick="doReset()">Sí, finalizar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toastEl"></div>
+
+<div class="btmbar" id="btmbar" style="display:none">
+  <button class="cfgbtn" onclick="openSettings()">⚙️ Configuración</button>
+  <button class="rfbtn" onclick="loadAll()">🔄 Actualizar</button>
+</div>
+
+<script>
+// ── STATE ──
+let scriptUrl = localStorage.getItem('super_script_url') || '';
+let CATS = [], PRODS = [], lista = [];
+let pmodMode = null, pmodId = null, pmodFav = false;
+let cmodId = null, cmodSelE = '';
+let qPid = null, qQty = 1;
+let delPid = null, delCatId = null;
+let toastTmr = null;
+
+const EMOJI_OPTS = ['🥦','🥩','🥛','🧀','🥫','🍞','🧃','❄️','🧹','🪥','🐾','📦','🍅','🍌','🍎','🥚','🍗','🍚','🍝','🧴','🫧','🫙','🥤','💧'];
+
+// ── INIT ──
+window.addEventListener('DOMContentLoaded', () => {
+  if (!scriptUrl) { document.getElementById('setupScreen').style.display = 'block'; }
+  else { showApp(); loadAll(); }
+});
+
+function saveUrl() {
+  const v = document.getElementById('urlInput').value.trim();
+  if (!v.startsWith('https://script.google.com')) { toast2('URL inválida', 'err'); return; }
+  scriptUrl = v;
+  localStorage.setItem('super_script_url', v);
+  document.getElementById('setupScreen').style.display = 'none';
+  showApp(); loadAll();
+}
+
+function showApp() {
+  document.getElementById('mainApp').style.display = 'block';
+  document.getElementById('btmbar').style.display = 'flex';
+}
+
+function openSettings() {
+  const v = prompt('URL del Google Apps Script:', scriptUrl);
+  if (v && v.startsWith('https://script.google.com')) {
+    scriptUrl = v;
+    localStorage.setItem('super_script_url', v);
+    loadAll(); toast2('URL actualizado', 'ok');
+  }
+}
+
+// ── API ──
+async function api(params) {
+  try {
+    const res = await fetch(scriptUrl + '?' + new URLSearchParams(params));
+    return await res.json();
+  } catch(e) { return { error: e.message }; }
+}
+
+async function loadAll() {
+  showLoading('catcon');
+  const [cRes, pRes, lRes] = await Promise.all([
+    api({ action: 'getCategories' }),
+    api({ action: 'getCatalog' }),
+    api({ action: 'getActiveList' })
+  ]);
+  if (cRes.error || pRes.error) {
+    document.getElementById('catcon').innerHTML = `<div class="empty"><div class="ei">⚠️</div><p>No se pudo conectar.<br>Verifica el URL en ⚙️.</p></div>`;
+    toast2('Error al conectar', 'err'); return;
+  }
+  CATS  = cRes.categories || [];
+  PRODS = pRes.catalog    || [];
+  lista = lRes.items      || [];
+  rebuildCatSelects();
+  renderCat(); upCount();
+  toast2('✓ Datos cargados', 'ok');
+}
+
+function showLoading(id) {
+  const el = document.getElementById(id);
+  if (el) el.innerHTML = `<div class="loading"><div class="spinner"></div><div class="loading-text">Cargando…</div></div>`;
+}
+
+// ── TABS ──
+function sw(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
+  document.getElementById('t-' + tab).classList.add('active');
+  document.getElementById('v-' + tab).classList.add('on');
+  if (tab === 'mer') renderShop();
+  if (tab === 'cat') renderCatlog();
+  if (tab === 'mgr') renderMgr();
+}
+
+function upCount() {
+  const n = lista.filter(i => !i.done).length;
+  const b = document.getElementById('pcount');
+  if (n > 0) { b.style.display = 'inline-block'; b.textContent = n; }
+  else b.style.display = 'none';
+}
+
+// ── HELPERS ──
+function sorted(items) {
+  return [
+    ...items.filter(p => p.favorite).sort((a,b) => a.name.localeCompare(b.name)),
+    ...items.filter(p => !p.favorite).sort((a,b) => a.name.localeCompare(b.name))
+  ];
+}
+function catName(cid) { const c = CATS.find(x => x.id === cid); return c ? c.name : ''; }
+
+function rebuildCatSelects() {
+  const sel = document.getElementById('pmod-c');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">-- Categoría --</option>';
+  CATS.forEach(c => {
+    const o = document.createElement('option');
+    o.value = c.id; o.textContent = (c.emoji || '') + ' ' + c.name;
+    sel.appendChild(o);
+  });
+  sel.value = cur;
+}
+
+function buildEmojiGrid(selected) {
+  document.getElementById('emoji-grid').innerHTML = EMOJI_OPTS.map(e =>
+    `<div class="emoji-opt${e === selected ? ' sel' : ''}" onclick="selectEmoji('${e}')">${e}</div>`
+  ).join('');
+}
+function selectEmoji(e) { cmodSelE = e; document.getElementById('cmod-e').value = e; buildEmojiGrid(e); }
+function syncEmojiInput() { cmodSelE = document.getElementById('cmod-e').value.trim(); buildEmojiGrid(cmodSelE); }
+
+// ── AGREGAR ──
+function filtr() { renderCat(document.getElementById('srch').value.trim().toLowerCase()); }
+
+function renderCat(q = '') {
+  const con = document.getElementById('catcon');
+  let filtered = PRODS.filter(p => !q || p.name.toLowerCase().includes(q) || catName(p.categoryId).toLowerCase().includes(q));
+  if (!filtered.length) {
+    con.innerHTML = `<div class="empty"><div class="ei">🔍</div><p>No se encontró "${q}".<br>Agrégalo manualmente abajo.</p></div>`; return;
+  }
+  if (q) {
+    let ih = ''; sorted(filtered).forEach(p => { ih += pHTML(p); });
+    con.innerHTML = `<div style="padding:0 10px 4px">${ih}</div>`; return;
+  }
+  let html = '';
+  CATS.forEach(cat => {
+    const items = sorted(filtered.filter(p => p.categoryId === cat.id));
+    if (!items.length) return;
+    const fc = items.filter(p => p.favorite).length;
+    let ih = '';
+    items.forEach((p, i) => {
+      if (fc > 0 && i === fc && fc < items.length) ih += `<div class="divider"></div>`;
+      ih += pHTML(p);
+    });
+    html += `<div class="csec">
+      <div class="chdr" onclick="togCat(this)">
+        <span style="font-size:16px">${cat.emoji || '📦'}</span>
+        <span>${cat.name}</span>
+        <span style="margin-left:4px;font-size:10px;color:var(--t3)">(${items.length})</span>
+        <span class="caro">▼</span>
+      </div>
+      <div class="citems">${ih}</div>
+    </div>`;
+  });
+  const uncat = sorted(filtered.filter(p => !CATS.find(c => c.id === p.categoryId)));
+  if (uncat.length) {
+    let ih = ''; uncat.forEach(p => { ih += pHTML(p); });
+    html += `<div class="csec">
+      <div class="chdr" onclick="togCat(this)"><span style="font-size:16px">📦</span><span>Sin categoría</span><span class="caro">▼</span></div>
+      <div class="citems">${ih}</div>
+    </div>`;
+  }
+  con.innerHTML = html || `<div class="empty"><div class="ei">📦</div><p>Catálogo vacío.<br>Agrega productos en Catálogo.</p></div>`;
+}
+
+function pHTML(p) {
+  const il = lista.find(i => i.productId === p.id);
+  const qty = il ? il.qty : 1;
+  const dot = p.favorite ? `<span style="width:7px;height:7px;border-radius:50%;background:var(--acc2);flex-shrink:0;display:inline-block"></span>` : '';
+  const pid = p.id, pname = p.name.replace(/'/g, "\\'");
+  return `<div class="pitem${il ? ' inlist' : ''}" id="pi-${pid}">
+    ${dot}<span class="pemo">${p.emoji || '🛒'}</span>
+    <div class="pnfo"><div class="pnm">${p.name}</div></div>
+    <button class="sbtn" onclick="togFav('${pid}')">${p.favorite ? '⭐' : '☆'}</button>
+    <div class="pacts">
+      ${il
+        ? `<button class="qbtn" onclick="chgQ('${pid}',-1)">−</button>
+           <span class="qdsp" id="qd-${pid}" onclick="openQ('${pid}','${pname}')">${qty}</span>
+           <button class="qbtn" onclick="chgQ('${pid}',1)">+</button>`
+        : `<button class="addbtn-sm" onclick="addP('${pid}')">+ Agregar</button>`}
+    </div>
+  </div>`;
+}
+
+function togCat(h) { h.classList.toggle('coll'); h.nextElementSibling.classList.toggle('hidden'); }
+
+async function addP(pid) {
+  if (lista.find(i => i.productId === pid)) { toast2('Ya está en la lista', 'ok'); return; }
+  const p = PRODS.find(x => x.id === pid);
+  const newItem = { productId: pid, qty: 1, done: false, id: 'it' + Date.now() };
+  lista.push(newItem);
+  renderCat(document.getElementById('srch').value.trim().toLowerCase());
+  upCount();
+  toast2('✓ ' + (p ? p.name : '') + ' agregado', 'ok');
+  const res = await api({ action: 'addToList', productId: pid, qty: 1, itemId: newItem.id });
+  if (res.error) toast2('Error al guardar', 'err');
+}
+
+async function chgQ(pid, d) {
+  const it = lista.find(i => i.productId === pid);
+  if (!it) { addP(pid); return; }
+  const nq = Math.max(0, it.qty + d);
+  if (nq === 0) {
+    const savedId = it.id;
+    lista = lista.filter(i => i.productId !== pid);
+    renderCat(document.getElementById('srch').value.trim().toLowerCase());
+    upCount();
+    await api({ action: 'removeFromList', itemId: savedId });
+    return;
+  }
+  it.qty = nq;
+  const el = document.getElementById('qd-' + pid);
+  if (el) el.textContent = nq;
+  upCount();
+  await api({ action: 'updateQty', itemId: it.id, qty: nq });
+}
+
+function openQ(pid, name) {
+  qPid = pid;
+  const it = lista.find(i => i.productId === pid);
+  qQty = it ? it.qty : 1;
+  document.getElementById('qmod-t').textContent = '✏️ ' + name;
+  document.getElementById('qmod-q').textContent = qQty;
+  document.getElementById('qmod').classList.add('open');
+}
+function adjQ(d) { qQty = Math.max(1, Math.min(99, qQty + d)); document.getElementById('qmod-q').textContent = qQty; }
+async function confirmQ() {
+  closem('qmod');
+  const it = lista.find(i => i.productId === qPid); if (!it) return;
+  it.qty = qQty;
+  const el = document.getElementById('qd-' + qPid); if (el) el.textContent = qQty;
+  upCount();
+  await api({ action: 'updateQty', itemId: it.id, qty: qQty });
+}
+
+async function togFav(pid) {
+  const p = PRODS.find(x => x.id === pid); if (!p) return;
+  p.favorite = !p.favorite;
+  renderCat(document.getElementById('srch').value.trim().toLowerCase());
+  if (document.getElementById('v-cat').classList.contains('on')) renderCatlog();
+  toast2(p.favorite ? '⭐ Marcado como frecuente' : 'Quitado de frecuentes', 'ok');
+  await api({ action: 'toggleFavorite', productId: pid, favorite: p.favorite });
+}
+
+// ── PRODUCT MODAL ──
+function togglePFav() { pmodFav = !pmodFav; document.getElementById('pmod-fav-box').className = 'mchk-box' + (pmodFav ? ' on' : ''); }
+
+function openProdModal(mode, pid) {
+  pmodMode = mode; pmodId = pid || null;
+  rebuildCatSelects();
+  if (pid) {
+    const p = PRODS.find(x => x.id === pid); if (!p) return;
+    pmodFav = p.favorite;
+    document.getElementById('pmod-title').textContent = 'Editar producto';
+    document.getElementById('pmod-sub').textContent = 'Los cambios se aplican en todo el app';
+    document.getElementById('pmod-n').value = p.name;
+    document.getElementById('pmod-e').value = p.emoji || '';
+    document.getElementById('pmod-c').value = p.categoryId || '';
+    document.getElementById('pmod-confirm').textContent = 'Guardar cambios';
+  } else {
+    pmodFav = false;
+    document.getElementById('pmod-title').textContent = 'Nuevo producto';
+    document.getElementById('pmod-sub').textContent = 'Queda guardado en el catálogo';
+    document.getElementById('pmod-n').value = '';
+    document.getElementById('pmod-e').value = '';
+    document.getElementById('pmod-c').value = '';
+    document.getElementById('pmod-confirm').textContent = 'Agregar';
+  }
+  document.getElementById('pmod-fav-box').className = 'mchk-box' + (pmodFav ? ' on' : '');
+  document.getElementById('pmod').classList.add('open');
+  setTimeout(() => document.getElementById('pmod-n').focus(), 80);
+}
+
+async function confirmProd() {
+  const nm = document.getElementById('pmod-n').value.trim();
+  const em = document.getElementById('pmod-e').value.trim();
+  const cat = document.getElementById('pmod-c').value;
+  if (!nm) { toast2('Escribe un nombre', 'err'); return; }
+  closem('pmod');
+  if (pmodId) {
+    const p = PRODS.find(x => x.id === pmodId); if (!p) return;
+    p.name = nm; if (em) p.emoji = em; p.categoryId = cat || p.categoryId; p.favorite = pmodFav;
+    renderCat(document.getElementById('srch').value.trim().toLowerCase());
+    if (document.getElementById('v-cat').classList.contains('on')) renderCatlog();
+    toast2('✓ Producto actualizado', 'ok');
+    await api({ action: 'updateProduct', productId: pmodId, name: nm, emoji: em || p.emoji, categoryId: cat || p.categoryId, favorite: pmodFav });
+  } else {
+    const newId = 'prod_' + Date.now();
+    const np = { id: newId, name: nm, emoji: em || '🛒', categoryId: cat || '', favorite: pmodFav };
+    PRODS.push(np);
+    renderCat(document.getElementById('srch').value.trim().toLowerCase());
+    if (document.getElementById('v-cat').classList.contains('on')) renderCatlog();
+    toast2('✓ ' + nm + ' creado', 'ok');
+    const res = await api({ action: 'addProduct', productId: newId, name: nm, emoji: em || '🛒', categoryId: cat || '', favorite: pmodFav });
+    if (res.error) toast2('Error al guardar', 'err');
+    if (pmodMode === 'agregar') addP(newId);
+  }
+}
+
+// ── CATÁLOGO ──
+function renderCatlog() {
+  const q = (document.getElementById('csrch') || {value:''}).value.trim().toLowerCase();
+  const con = document.getElementById('catlogcon');
+  let filtered = PRODS.filter(p => !q || p.name.toLowerCase().includes(q) || catName(p.categoryId).toLowerCase().includes(q));
+  document.getElementById('cat-count').textContent = filtered.length + ' productos';
+  if (!filtered.length) { con.innerHTML = `<div class="empty"><div class="ei">🔍</div><p>No se encontró "${q}".</p></div>`; return; }
+  let html = '';
+  CATS.forEach(cat => {
+    const items = sorted(filtered.filter(p => p.categoryId === cat.id));
+    if (!items.length) return;
+    const fc = items.filter(p => p.favorite).length;
+    let ih = '';
+    items.forEach((p, i) => {
+      if (fc > 0 && i === fc && fc < items.length) ih += `<div class="divider"></div>`;
+      const pname = p.name.replace(/'/g, "\\'");
+      ih += `<div class="cat-item-row${p.favorite ? ' isfav' : ''}">
+        <span style="font-size:18px;flex-shrink:0">${p.emoji || '🛒'}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:700;color:var(--t);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
+          ${p.favorite ? `<div style="font-size:10px;color:var(--acc2);font-weight:700">⭐ frecuente</div>` : ''}
+        </div>
+        <button class="editbtn" onclick="openProdModal('catalogo','${p.id}')">✏️ Editar</button>
+        <button class="delbtn" onclick="askDelProd('${p.id}','${pname}')">🗑️</button>
+      </div>`;
+    });
+    html += `<div class="csec">
+      <div class="chdr" onclick="togCat(this)">
+        <span style="font-size:16px">${cat.emoji || '📦'}</span><span>${cat.name}</span>
+        <span style="margin-left:4px;font-size:10px;color:var(--t3)">(${items.length})</span>
+        <span class="caro">▼</span>
+      </div>
+      <div class="citems">${ih}</div>
+    </div>`;
+  });
+  const uncat = sorted(filtered.filter(p => !CATS.find(c => c.id === p.categoryId)));
+  if (uncat.length) {
+    let ih = '';
+    uncat.forEach(p => {
+      const pname = p.name.replace(/'/g, "\\'");
+      ih += `<div class="cat-item-row">
+        <span style="font-size:18px;flex-shrink:0">${p.emoji || '🛒'}</span>
+        <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:var(--t)">${p.name}</div></div>
+        <button class="editbtn" onclick="openProdModal('catalogo','${p.id}')">✏️ Editar</button>
+        <button class="delbtn" onclick="askDelProd('${p.id}','${pname}')">🗑️</button>
+      </div>`;
+    });
+    html += `<div class="csec">
+      <div class="chdr" onclick="togCat(this)"><span style="font-size:16px">📦</span><span>Sin categoría</span><span class="caro">▼</span></div>
+      <div class="citems">${ih}</div>
+    </div>`;
+  }
+  con.innerHTML = html || `<div class="empty"><div class="ei">📦</div><p>Catálogo vacío.</p></div>`;
+}
+
+function askDelProd(pid, name) {
+  delPid = pid;
+  document.getElementById('delmod-s').textContent = '¿Eliminar "' + name + '" del catálogo permanentemente?';
+  document.getElementById('delmod').classList.add('open');
+}
+async function confirmDel() {
+  const savedId = delPid; closem('delmod');
+  const p = PRODS.find(x => x.id === savedId);
+  PRODS = PRODS.filter(x => x.id !== savedId);
+  lista = lista.filter(i => i.productId !== savedId);
+  renderCatlog(); renderCat(document.getElementById('srch').value.trim().toLowerCase()); upCount();
+  toast2('🗑️ ' + (p ? p.name : '') + ' eliminado', 'ok');
+  await api({ action: 'deleteProduct', productId: savedId });
+}
+
+// ── CATEGORIES ──
+function renderMgr() {
+  const q = (document.getElementById('mgsrch') || {value:''}).value.trim().toLowerCase();
+  const con = document.getElementById('mgrcon');
+  let filtered = CATS.filter(c => !q || c.name.toLowerCase().includes(q));
+  document.getElementById('mgr-count').textContent = filtered.length + ' categorías';
+  if (!filtered.length) { con.innerHTML = `<div class="empty"><div class="ei">🔍</div><p>No se encontró "${q}".</p></div>`; return; }
+  let html = '<div style="padding:0 10px 8px">';
+  filtered.forEach(cat => {
+    const cnt = PRODS.filter(p => p.categoryId === cat.id).length;
+    const cname = cat.name.replace(/'/g, "\\'");
+    html += `<div class="catman-row">
+      <div class="catman-emo">${cat.emoji || '📦'}</div>
+      <div class="catman-info">
+        <div class="catman-name">${cat.name}</div>
+        <div class="catman-count">${cnt} producto${cnt !== 1 ? 's' : ''}</div>
+      </div>
+      <button class="editbtn" onclick="openCatModal('${cat.id}')">✏️ Editar</button>
+      <button class="delbtn" onclick="askDelCat('${cat.id}','${cname}',${cnt})">🗑️</button>
+    </div>`;
+  });
+  html += '</div>';
+  con.innerHTML = html;
+}
+
+function openCatModal(catId) {
+  cmodId = catId || null;
+  const existing = catId ? CATS.find(c => c.id === catId) : null;
+  if (existing) {
+    cmodSelE = existing.emoji || '';
+    document.getElementById('cmod-title').textContent = 'Editar categoría';
+    document.getElementById('cmod-sub').textContent = 'Los cambios se reflejan en todos los productos';
+    document.getElementById('cmod-n').value = existing.name;
+    document.getElementById('cmod-e').value = existing.emoji || '';
+    document.getElementById('cmod-confirm').textContent = 'Guardar cambios';
+    document.getElementById('cmod-warn').style.display = 'none';
+  } else {
+    cmodSelE = '';
+    document.getElementById('cmod-title').textContent = 'Nueva categoría';
+    document.getElementById('cmod-sub').textContent = 'Elige un emoji y ponle nombre';
+    document.getElementById('cmod-n').value = '';
+    document.getElementById('cmod-e').value = '';
+    document.getElementById('cmod-confirm').textContent = 'Crear';
+    document.getElementById('cmod-warn').style.display = 'none';
+  }
+  buildEmojiGrid(cmodSelE);
+  document.getElementById('cmod').classList.add('open');
+  setTimeout(() => document.getElementById('cmod-n').focus(), 80);
+}
+
+async function confirmCat() {
+  const nm = document.getElementById('cmod-n').value.trim();
+  const em = document.getElementById('cmod-e').value.trim() || cmodSelE || '📦';
+  if (!nm) { toast2('Escribe un nombre para la categoría', 'err'); return; }
+  closem('cmod');
+  if (cmodId) {
+    const cat = CATS.find(c => c.id === cmodId); if (!cat) return;
+    cat.name = nm; cat.emoji = em;
+    rebuildCatSelects();
+    renderMgr(); renderCatlog(); renderCat(document.getElementById('srch').value.trim().toLowerCase());
+    toast2('✓ Categoría actualizada', 'ok');
+    await api({ action: 'updateCategory', categoryId: cmodId, name: nm, emoji: em });
+  } else {
+    const newId = 'cat_' + Date.now();
+    CATS.push({ id: newId, name: nm, emoji: em });
+    rebuildCatSelects(); renderMgr();
+    toast2('✓ Categoría "' + nm + '" creada', 'ok');
+    await api({ action: 'addCategory', categoryId: newId, name: nm, emoji: em });
+  }
+}
+
+function askDelCat(catId, name, cnt) {
+  delCatId = catId;
+  let msg = '¿Eliminar la categoría "' + name + '"?';
+  if (cnt > 0) msg += ' Sus ' + cnt + ' producto(s) quedarán sin categoría.';
+  document.getElementById('delcmod-s').textContent = msg;
+  document.getElementById('delcmod').classList.add('open');
+}
+async function confirmDelCat() {
+  const savedId = delCatId; closem('delcmod');
+  const cat = CATS.find(c => c.id === savedId);
+  PRODS.forEach(p => { if (p.categoryId === savedId) p.categoryId = ''; });
+  CATS = CATS.filter(c => c.id !== savedId);
+  rebuildCatSelects();
+  renderMgr(); renderCatlog(); renderCat(document.getElementById('srch').value.trim().toLowerCase());
+  toast2('🗑️ Categoría ' + (cat ? '"' + cat.name + '"' : '') + ' eliminada', 'ok');
+  await api({ action: 'deleteCategory', categoryId: savedId });
+}
+
+// ── SHOP ──
+function renderShop() {
+  const con = document.getElementById('shopcon');
+  if (!lista.length) {
+    con.innerHTML = `<div class="empty" style="margin-top:40px"><div class="ei">🛒</div><p>La lista está vacía.<br>Agrega productos en Agregar.</p></div>`; return;
+  }
+  const done = lista.filter(i => i.done).length, total = lista.length;
+  const pct = Math.round((done / total) * 100);
+  let html = `<div class="ssum">
+    <div><div class="ssum-lbl">Completados</div><div class="ssum-num">${done}/${total}</div></div>
+    <div style="text-align:right"><div class="ssum-lbl">Progreso</div><div class="ssum-num">${pct}%</div></div>
+  </div>
+  <div class="pbwrap"><div class="pbar" style="width:${pct}%"></div></div>`;
+  const pend = lista.filter(i => !i.done), comp = lista.filter(i => i.done);
+  if (pend.length) { html += `<div class="scat-lbl">📋 Pendientes</div><div style="padding:0 10px">`; pend.forEach(it => { html += sHTML(it); }); html += `</div>`; }
+  if (comp.length) { html += `<div class="scat-lbl" style="margin-top:6px">✅ En el carrito</div><div style="padding:0 10px">`; comp.forEach(it => { html += sHTML(it); }); html += `</div>`; }
+  if (done === total && total > 0) html += `<div class="adone">🎉 ¡Todos los productos en el carrito!</div>`;
+  html += `<button class="btn-complete" onclick="document.getElementById('rmod').classList.add('open')">🎉 Finalizar compra</button>`;
+  con.innerHTML = html;
+}
+
+function sHTML(it) {
+  const p = PRODS.find(x => x.id === it.productId);
+  const nm = p ? p.name : 'Producto', em = p ? (p.emoji || '🛒') : '🛒';
+  return `<div class="sitem${it.done ? ' done' : ''}" onclick="togDone('${it.id}')">
+    <div class="cchk">${it.done ? '✓' : ''}</div>
+    <span style="font-size:19px;flex-shrink:0">${em}</span>
+    <div class="sinf"><div class="sinm">${nm}</div><div class="siqt">Cantidad: ${it.qty}</div></div>
+  </div>`;
+}
+
+async function togDone(iid) {
+  const it = lista.find(i => i.id === iid); if (!it) return;
+  it.done = !it.done;
+  renderShop(); upCount();
+  await api({ action: 'toggleDone', itemId: it.id, done: it.done });
+}
+
+async function doReset() {
+  closem('rmod'); lista = [];
+  renderShop(); renderCat(); upCount(); sw('agr');
+  toast2('🎉 ¡Compra finalizada!', 'ok');
+  await api({ action: 'resetList' });
+}
+
+// ── UTIL ──
+function closem(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.mback').forEach(b => {
+  b.addEventListener('click', e => { if (e.target === b) b.classList.remove('open'); });
+});
+function toast2(msg, type) {
+  const el = document.getElementById('toastEl');
+  el.textContent = msg; el.className = 'toast show ' + (type || '');
+  clearTimeout(toastTmr);
+  toastTmr = setTimeout(() => el.classList.remove('show'), 2400);
+}
+</script>
+</body>
+</html>
