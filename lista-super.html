@@ -169,7 +169,7 @@
 <div id="mainApp" style="display:none">
   <div class="app-header">
     <div class="app-title">🛒 <span>Lista Super</span></div>
-    <span class="vbadge">v1.0</span>
+    <span class="vbadge">v1.1</span>
   </div>
   <div class="tabs">
     <div class="tab active" id="t-agr" onclick="sw('agr')">➕ Agregar</div>
@@ -191,7 +191,12 @@
   </div>
 
   <!-- MERCADO -->
-  <div class="view" id="v-mer"><div id="shopcon"></div></div>
+  <div class="view" id="v-mer">
+    <div style="display:flex;align-items:center;justify-content:flex-end;padding:10px 14px 0">
+      <button onclick="syncShop()" style="display:flex;align-items:center;gap:5px;background:var(--accd);border:1px solid rgba(110,231,183,.2);border-radius:var(--rs);padding:7px 12px;color:var(--acc);font-family:'Nunito',sans-serif;font-weight:800;font-size:12px;cursor:pointer" id="sync-btn">🔄 Sincronizar lista</button>
+    </div>
+    <div id="shopcon"></div>
+  </div>
 
   <!-- CATÁLOGO -->
   <div class="view" id="v-cat">
@@ -387,6 +392,10 @@ async function loadAll() {
   lista = lRes.items      || [];
   rebuildCatSelects();
   renderCat(); upCount();
+  // refresh whichever tab is currently visible
+  if (document.getElementById('v-mer').classList.contains('on')) renderShop();
+  if (document.getElementById('v-cat').classList.contains('on')) renderCatlog();
+  if (document.getElementById('v-mgr').classList.contains('on')) renderMgr();
   toast2('✓ Datos cargados', 'ok');
 }
 
@@ -777,6 +786,18 @@ async function confirmDelCat() {
   renderMgr(); renderCatlog(); renderCat(document.getElementById('srch').value.trim().toLowerCase());
   toast2('🗑️ Categoría ' + (cat ? '"' + cat.name + '"' : '') + ' eliminada', 'ok');
   await api({ action: 'deleteCategory', categoryId: savedId });
+}
+
+// ── SYNC SHOP (solo recarga la lista activa desde Sheets) ──
+async function syncShop() {
+  const btn = document.getElementById('sync-btn');
+  if (btn) { btn.textContent = '⏳ Sincronizando...'; btn.style.opacity = '.6'; }
+  const res = await api({ action: 'getActiveList' });
+  if (btn) { btn.textContent = '🔄 Sincronizar lista'; btn.style.opacity = '1'; }
+  if (res.error) { toast2('Error al sincronizar', 'err'); return; }
+  lista = res.items || [];
+  renderShop(); upCount();
+  toast2('✓ Lista actualizada', 'ok');
 }
 
 // ── SHOP ──
