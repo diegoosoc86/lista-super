@@ -169,7 +169,7 @@
 <div id="mainApp" style="display:none">
   <div class="app-header">
     <div class="app-title">🛒 <span>Lista Super</span></div>
-    <span class="vbadge">v1.1</span>
+    <span class="vbadge">v1.2</span>
   </div>
   <div class="tabs">
     <div class="tab active" id="t-agr" onclick="sw('agr')">➕ Agregar</div>
@@ -608,6 +608,7 @@ async function confirmProd() {
   const em = document.getElementById('pmod-e').value.trim();
   const cat = document.getElementById('pmod-c').value;
   if (!nm) { toast2('Escribe un nombre', 'err'); return; }
+  if (!cat) { toast2('Selecciona una categoría', 'err'); return; }
   closem('pmod');
   if (pmodId) {
     const p = PRODS.find(x => x.id === pmodId); if (!p) return;
